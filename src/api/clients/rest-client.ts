@@ -4,7 +4,7 @@ import * as qs from "qs";
 // Port for the backend API
 const PORT = "8080";
 
-// Bbase URL for API requests
+// Base URL for API requests
 const BASE_URL = `http://localhost:${PORT}/api/v1`;
 
 // Get the token from local storage

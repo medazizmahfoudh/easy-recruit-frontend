@@ -1,25 +1,25 @@
-const storeToken = (token: string) => {
+const storeToken = (key: string, token: string) => {
   try {
-    localStorage.setItem("token", token);
-  } catch (error) {
-    console.log(error);
+    localStorage.setItem(key, token);
+  } catch (e) {
+    console.error("error storing the token", e);
   }
 };
 
-const getToken = () => {
+const getToken = (key: string) => {
   try {
-    return localStorage.getItem("token");
-  } catch (error) {
-    console.log(error);
+    return localStorage.getItem(key);
+  } catch (e) {
+    console.error("error getting the token", e);
   }
 };
 
-const removeToken = () => {
+const removeToken = (key: string) => {
   try {
-    localStorage.removeItem("token");
-  } catch (error) {
-    console.log(error);
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.error("error removing the token", e);
   }
 };
 
-export default { storeToken, getToken, removeToken };
+export { storeToken, getToken, removeToken };
