@@ -1,7 +1,7 @@
 {
-  "name": "core-react",
+  "name": "{{PROJECT_NAME}}",
   "private": true,
-  "version": "0.0.0",
+  "version": "{{PROJECT_VERSION}}",
   "type": "module",
   "scripts": {
     "dev": "vite",
