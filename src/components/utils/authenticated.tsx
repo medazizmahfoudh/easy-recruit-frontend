@@ -20,7 +20,8 @@ const Authenticated = ({
     role = decoded.role;
   }
 
-  if (token && role === userRole) {
+  // if (token && role === userRole) {
+  if (true && role === userRole) {
     return <>{whenSuccess}</>;
   } else {
     return <>{whenFail}</>;

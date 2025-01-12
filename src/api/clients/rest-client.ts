@@ -5,7 +5,7 @@ import * as qs from "qs";
 const PORT = "8080";
 
 // Base URL for API requests
-const BASE_URL = `http://localhost:${PORT}/api/v1`;
+const BASE_URL = `http://localhost:${PORT}`;
 
 // Get the token from local storage
 const token = localStorage.getItem("token");

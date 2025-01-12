@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Routes } from "react-router";
 import ProtectedRoutes from "@/router/protected-routes";
 import PublicRoutes from "@/router/public-routes";
 import AuthProvider from "@/context/auth-context";
@@ -12,9 +12,7 @@ const AppRouter = () => {
         <ProtectedRoutes />
       </AuthProvider>
       <PublicRoutes />
-      <Routes>
-        <Route path="*" element={<div>404</div>} />
-      </Routes>
+      <Routes>{/* <Route path="*" element={<div>404</div>} /> */}</Routes>
     </BrowserRouter>
   );
 };
