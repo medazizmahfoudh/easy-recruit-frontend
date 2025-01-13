@@ -11,16 +11,10 @@ import {
 } from "@/components/ui/dialog";
 import { Position } from "@/entities/position";
 import PostionForm from "@/components/forms/position-form";
-import { useQuery } from "@tanstack/react-query";
-import axiosClient from "@/api/clients/rest-client";
-import { ApiResponse } from "@/api/types/api-response";
-import { AxiosResponse } from "axios";
+import { usePositions } from "@/hooks/api/use-position";
 
 const Positions = () => {
-  const { data, isLoading } = useQuery<AxiosResponse<ApiResponse<Position>>>({
-    queryKey: ["positions"],
-    queryFn: () => axiosClient.get("/positions/all"),
-  });
+  const { positions, isLoading } = usePositions();
 
   return (
     <div>
@@ -46,7 +40,7 @@ const Positions = () => {
         <DataTable
           isLoading={isLoading}
           columns={positionColmuns}
-          data={data ? (data.data.data as Position[]) : []}
+          data={positions ? (positions as Position[]) : []}
         />
       </div>
     </div>

@@ -1,7 +1,7 @@
 export type Recruiter = {
   uuid: string;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   department: string;
   title: string;
 };

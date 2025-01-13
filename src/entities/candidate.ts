@@ -1,7 +1,7 @@
 export type Candidate = {
   uuid: string;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   email: string;
 };
 export type CandidateList = Candidate[];

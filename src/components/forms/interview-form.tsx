@@ -16,6 +16,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Combobox } from "../ui/combobox";
+import { useState } from "react";
 
 const comboboxSchema = z.object({
   value: z.string().min(1, {
@@ -40,13 +41,28 @@ const defaultValues = {
   date: "",
 };
 
-const InterviewForm = () => {
+interface interviewFormProps {
+  positions: { value: string; label: string }[];
+  recruiters: { value: string; label: string }[];
+  candidates: { value: string; label: string }[];
+}
+
+const InterviewForm = ({
+  positions,
+  recruiters,
+  candidates,
+}: interviewFormProps) => {
+  const [recruiterValue, setRecruiterValue] = useState("");
+  const [candidateValue, setCandidateValue] = useState("");
+  const [positionValue, setPositionValue] = useState("");
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: defaultValues,
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
+    console.log(data);
     toast({
       title: "You submitted the following values:",
       description: (
@@ -63,15 +79,15 @@ const InterviewForm = () => {
         <div className="flex flex-col gap-4">
           <div>
             <Label>Position</Label>
-            <Combobox data={[]} />
+            <Combobox data={positions} setSelectedValue={setPositionValue} />
           </div>
           <div>
             <Label htmlFor="recruiter">Recruiter</Label>
-            <Combobox data={[]} />
+            <Combobox data={recruiters} setSelectedValue={setRecruiterValue} />
           </div>
           <div>
             <Label htmlFor="candidate">Candidate</Label>
-            <Combobox data={[]} />
+            <Combobox data={candidates} setSelectedValue={setCandidateValue} />
           </div>
           <div>
             <Label htmlFor="date">Date</Label>

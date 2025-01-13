@@ -10,8 +10,35 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { InterviewReduced } from "@/entities/interview";
+import { useCandidates } from "@/hooks/api/use-candidate";
+import { useInterviews } from "@/hooks/api/use-interview";
+import { usePositions } from "@/hooks/api/use-position";
+import { useRecruiters } from "@/hooks/api/use-recruiter";
 
 const Interviews = () => {
+  const { interviews, isLoading } = useInterviews();
+  const { recruiters } = useRecruiters();
+  const { candidates } = useCandidates();
+  const { positions } = usePositions();
+
+  const recruitersReduced =
+    recruiters?.map((recruiter) => ({
+      value: recruiter.uuid,
+      label: `${recruiter.firstname} ${recruiter.lastname}`,
+    })) || [];
+  const candidateReduced =
+    candidates?.map((candidate) => ({
+      value: candidate.uuid,
+      label: `${candidate.firstname} ${candidate.lastname}`,
+    })) || [];
+
+  const positionReduced =
+    positions?.map((position) => ({
+      value: position.uuid,
+      label: position.name,
+    })) || [];
+
   return (
     <div>
       <div className="flex flex-col gap-4">
@@ -29,11 +56,19 @@ const Interviews = () => {
               </DialogDescription>
             </DialogHeader>
             <div>
-              <InterviewForm />
+              <InterviewForm
+                positions={positionReduced}
+                recruiters={recruitersReduced}
+                candidates={candidateReduced}
+              />
             </div>
           </DialogContent>
         </Dialog>
-        <DataTable columns={interviewColumns} data={[]} />
+        <DataTable
+          isLoading={isLoading}
+          columns={interviewColumns}
+          data={interviews ? (interviews as InterviewReduced[]) : []}
+        />
       </div>
     </div>
   );

@@ -25,11 +25,12 @@ interface ComboboxProps {
     value: string;
     label: string;
   }[];
+  setSelectedValue: (value: string) => void;
 }
 
-export function Combobox({ data, icon }: ComboboxProps) {
+export function Combobox({ data, icon, setSelectedValue }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  const [selectedLabel, setSelectedLabel] = React.useState("");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -40,7 +41,9 @@ export function Combobox({ data, icon }: ComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value ? data.find((item) => item.value === value)?.label : "Empty"}
+          {selectedLabel !== ""
+            ? data.find((item) => item.label === selectedLabel)?.label
+            : "Empty"}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -54,9 +57,10 @@ export function Combobox({ data, icon }: ComboboxProps) {
                 data.map((item) => (
                   <CommandItem
                     key={item.value}
-                    value={item.value}
+                    value={item.label}
                     onSelect={(currentValue) => {
-                      setValue(currentValue === value ? "" : currentValue);
+                      setSelectedLabel(currentValue);
+                      setSelectedValue(item.label);
                       setOpen(false);
                     }}
                   >
@@ -65,7 +69,9 @@ export function Combobox({ data, icon }: ComboboxProps) {
                     <Check
                       className={cn(
                         "ml-auto",
-                        value === item.value ? "opacity-100" : "opacity-0"
+                        selectedLabel === item.label
+                          ? "opacity-100"
+                          : "opacity-0"
                       )}
                     />
                   </CommandItem>
