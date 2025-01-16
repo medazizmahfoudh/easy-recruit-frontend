@@ -10,8 +10,8 @@ const AppRouter = () => {
       <ScrollRestoration />
       <AuthProvider>
         <ProtectedRoutes />
+        <PublicRoutes />
       </AuthProvider>
-      <PublicRoutes />
       <Routes>{/* <Route path="*" element={<div>404</div>} /> */}</Routes>
     </BrowserRouter>
   );

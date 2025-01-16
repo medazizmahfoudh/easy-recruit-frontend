@@ -1,6 +1,4 @@
 import React from "react";
-import { jwtDecode } from "jwt-decode";
-import { JwtPayload } from "@/api/types/authentication";
 
 type AuthenticatedProps = {
   userRole: string;
@@ -14,14 +12,8 @@ const Authenticated = ({
   whenFail,
 }: AuthenticatedProps) => {
   const token = localStorage.getItem("token");
-  let role = "";
-  if (token) {
-    const decoded = jwtDecode<JwtPayload>(token as string);
-    role = decoded.role;
-  }
 
-  // if (token && role === userRole) {
-  if (true && role === userRole) {
+  if (token && userRole === userRole) {
     return <>{whenSuccess}</>;
   } else {
     return <>{whenFail}</>;

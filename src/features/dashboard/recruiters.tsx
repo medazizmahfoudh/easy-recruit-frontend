@@ -11,14 +11,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Recruiter } from "@/entities/recruiter";
-import { useRecruiters } from "@/hooks/api/use-recruiter";
+import { useDeleteRecruiters, useRecruiters } from "@/hooks/api/use-recruiter";
+import { toast } from "@/hooks/use-toast";
+import { Row } from "@tanstack/react-table";
+import { useState } from "react";
 
 const Recruiters = () => {
-  const { recruiters, isLoading } = useRecruiters();
+  const { recruiters, isLoading, refetch } = useRecruiters();
+  const [selectedRows, setSelectedRows] = useState<Row<Recruiter>[]>([]);
+  const deleteMutation = useDeleteRecruiters();
+
+  const [open, setOpen] = useState(false);
+
   return (
     <div>
       <div className="flex flex-col gap-4">
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="items-start">
               Add new recruiter
@@ -32,7 +40,7 @@ const Recruiters = () => {
               </DialogDescription>
             </DialogHeader>
             <div>
-              <RecruiterForm />
+              <RecruiterForm refetch={refetch} setFormOpen={setOpen} />
             </div>
           </DialogContent>
         </Dialog>
@@ -40,6 +48,24 @@ const Recruiters = () => {
           isLoading={isLoading}
           columns={recruiterColumns}
           data={recruiters ? (recruiters as Recruiter[]) : []}
+          setSelectedRows={setSelectedRows}
+          deletable={true}
+          deleteAction={() => {
+            deleteMutation
+              .mutateAsync(selectedRows.map((row) => row.original.uuid))
+              .then(() => {
+                toast({
+                  title:
+                    "You have succesffully deleted the selected recruiters.",
+                });
+                refetch();
+              })
+              .catch(() => {
+                toast({
+                  title: deleteMutation.error?.message,
+                });
+              });
+          }}
         />
       </div>
     </div>

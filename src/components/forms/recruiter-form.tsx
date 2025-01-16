@@ -15,6 +15,8 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
+import { useSumbitRecruiter } from "@/hooks/api/use-recruiter";
+import { Loader2 } from "lucide-react";
 
 const FormSchema = z.object({
   firstname: z.string().min(2, {
@@ -31,7 +33,12 @@ const FormSchema = z.object({
   }),
 });
 
-const RecruiterForm = () => {
+interface RecruiterFormProps {
+  refetch: () => void;
+  setFormOpen: (open: boolean) => void;
+}
+
+const RecruiterForm = ({ refetch, setFormOpen }: RecruiterFormProps) => {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -42,15 +49,40 @@ const RecruiterForm = () => {
     },
   });
 
+  const mutation = useSumbitRecruiter();
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    mutation
+      .mutateAsync({
+        firstname: data.firstname,
+        lastname: data.lastname,
+        department: data.department,
+        title: data.title,
+      })
+      .then(() => {
+        toast({
+          title: "You submitted the following values:",
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <code className="text-white">
+                {JSON.stringify(data, null, 2)}
+              </code>
+            </pre>
+          ),
+        });
+        refetch();
+        setFormOpen(false);
+      })
+      .catch(() => {
+        toast({
+          title: "Error",
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <p className="text-white">{mutation.error?.message}</p>
+            </pre>
+          ),
+        });
+      });
   }
 
   return (
@@ -117,7 +149,13 @@ const RecruiterForm = () => {
               )}
             />
           </div>
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Submit"
+            )}
+          </Button>
         </div>
       </form>
     </Form>

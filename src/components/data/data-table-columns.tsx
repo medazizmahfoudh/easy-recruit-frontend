@@ -1,4 +1,4 @@
-import { ApplicationReduced } from "@/entities/application";
+import { ApplicationReduced, ApplicationStatus } from "@/entities/application";
 import { Candidate } from "@/entities/candidate";
 import { Position } from "@/entities/position";
 import { ColumnDef } from "@tanstack/react-table";
@@ -13,9 +13,19 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { MoreHorizontal, PenBox, Trash, Copy, ArrowUpDown } from "lucide-react";
+import {
+  MoreHorizontal,
+  PenBox,
+  Trash,
+  Copy,
+  ArrowUpDown,
+  Mail,
+  CheckSquare,
+  SquareX,
+} from "lucide-react";
 import { InterviewReduced } from "@/entities/interview";
 import { Recruiter } from "@/entities/recruiter";
+import { Checkbox } from "../ui/checkbox";
 
 const skillLevelColors = {
   1: "bg-sky-100 text-sky-700",
@@ -37,7 +47,35 @@ const applicationStatusColors = {
   REJECTED: "bg-red-500 text-white",
 };
 
+const interviewStatusColors = {
+  SCHEDULED: "bg-cyan-500 text-white",
+  COMPLETED: "bg-green-500 text-white",
+  CANCELLED: "bg-red-500 text-white",
+};
+
 export const recruiterColumns: ColumnDef<Recruiter>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "uuid",
     header: ({ column }) => {
@@ -65,6 +103,9 @@ export const recruiterColumns: ColumnDef<Recruiter>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      return <span className="capitalize">{row.getValue("firstname")}</span>;
+    },
   },
   {
     accessorKey: "lastname",
@@ -78,6 +119,9 @@ export const recruiterColumns: ColumnDef<Recruiter>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
+    },
+    cell: ({ row }) => {
+      return <span className="capitalize">{row.getValue("lastname")}</span>;
     },
   },
   {
@@ -111,6 +155,28 @@ export const recruiterColumns: ColumnDef<Recruiter>[] = [
 ];
 
 export const interviewColumns: ColumnDef<InterviewReduced>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "uuid",
     header: ({ column }) => {
@@ -170,6 +236,13 @@ export const interviewColumns: ColumnDef<InterviewReduced>[] = [
   {
     accessorKey: "evaluation",
     header: "Evaluation",
+    cell: ({ row }) => {
+      return (
+        <Button variant="ghost" onClick={() => alert(row.getValue("comment"))}>
+          View
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "date",
@@ -212,6 +285,13 @@ export const interviewColumns: ColumnDef<InterviewReduced>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      return (
+        <Button variant="ghost" onClick={() => alert(row.getValue("comment"))}>
+          View
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "status",
@@ -226,10 +306,74 @@ export const interviewColumns: ColumnDef<InterviewReduced>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      const status = row.getValue<keyof typeof interviewStatusColors>("status");
+      const badgeColor =
+        interviewStatusColors[status] || "bg-gray-500 text-white";
+      return <Badge className={badgeColor}>{status}</Badge>;
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const position = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(position.uuid)}
+            >
+              <Copy />
+              Copy Identifier
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <CheckSquare />
+              Set as Completed
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <SquareX />
+              Set as Cancelled
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
 ];
 
 export const candidateColmuns: ColumnDef<Candidate>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "uuid",
     header: ({ column }) => {
@@ -257,6 +401,9 @@ export const candidateColmuns: ColumnDef<Candidate>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      return <span className="capitalize">{row.getValue("firstname")}</span>;
+    },
   },
   {
     accessorKey: "lastname",
@@ -270,6 +417,9 @@ export const candidateColmuns: ColumnDef<Candidate>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
+    },
+    cell: ({ row }) => {
+      return <span className="capitalize">{row.getValue("lastname")}</span>;
     },
   },
   {
@@ -286,8 +436,61 @@ export const candidateColmuns: ColumnDef<Candidate>[] = [
       );
     },
   },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const position = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(position.uuid)}
+            >
+              <Copy />
+              Copy Identifier
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Mail />
+              Send Email
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
 ];
 export const applicationColmuns: ColumnDef<ApplicationReduced>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "uuid",
     header: ({ column }) => {
@@ -315,6 +518,13 @@ export const applicationColmuns: ColumnDef<ApplicationReduced>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      return (
+        <span className="capitalize">
+          {row.getValue("candidate_first_name")}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "candidate_last_name",
@@ -327,6 +537,13 @@ export const applicationColmuns: ColumnDef<ApplicationReduced>[] = [
           Last Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      );
+    },
+    cell: ({ row }) => {
+      return (
+        <span className="capitalize">
+          {row.getValue("candidate_last_name")}
+        </span>
       );
     },
   },
@@ -344,13 +561,40 @@ export const applicationColmuns: ColumnDef<ApplicationReduced>[] = [
       );
     },
   },
+  // {
+  //   accessorKey: "candidate_cv",
+  //   header: "CV",
+  //   cell: ({ row }) => {
+  //     return <span>Cv fetchig isnt supported for the moment!</span>;
+  //   },
+  // },
   {
-    accessorKey: "candidate_phone",
-    header: "Phone",
+    accessorKey: "position_name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Position
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
   {
-    accessorKey: "candidate_cv",
-    header: "CV",
+    accessorKey: "position_location",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Position Location
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "status",
@@ -395,7 +639,7 @@ export const applicationColmuns: ColumnDef<ApplicationReduced>[] = [
               Copy Identifier
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            {position.status == "NEW" ? (
+            {position.status == ApplicationStatus.NEW ? (
               <DropdownMenuItem>
                 <PenBox />
                 Classify
@@ -412,6 +656,28 @@ export const applicationColmuns: ColumnDef<ApplicationReduced>[] = [
   },
 ];
 export const positionColmuns: ColumnDef<Position>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "uuid",
     header: ({ column }) => {

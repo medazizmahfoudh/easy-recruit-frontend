@@ -6,14 +6,13 @@ import {
   useState,
 } from "react";
 import * as tokenStorage from "@/storage/token-storage";
-import { jwtDecode } from "jwt-decode";
-import { JwtPayload } from "@/api/types/authentication";
 import axiosClient from "@/api/clients/rest-client";
 
 interface AuthContextType {
   token: string | null;
   role: string | null;
   setToken: (token: string) => void;
+  setRole: (token: string) => void;
   removeToken: () => void;
 }
 
@@ -34,10 +33,12 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   useLayoutEffect(() => {
     const fetchToken = async () => {
       const fetchedToken = await tokenStorage.getToken("token");
+      const fetchedRole = await tokenStorage.getToken("role");
+
       console.log("fetched token", fetchedToken);
       if (fetchedToken) {
         setToken(fetchedToken as string);
-        setRole(jwtDecode<JwtPayload>(fetchedToken as string).role);
+        setRole(fetchedRole as string);
       }
     };
     fetchToken();
@@ -58,7 +59,13 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, setToken, removeToken: () => setToken(null), role }}
+      value={{
+        token,
+        setToken,
+        removeToken: () => setToken(null),
+        role,
+        setRole,
+      }}
     >
       {children}
     </AuthContext.Provider>

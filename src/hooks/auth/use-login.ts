@@ -2,19 +2,22 @@ import * as tokenStorage from "@/storage/token-storage";
 import axiosClient from "@/api/clients/rest-client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
-import { useToast } from "../use-toast";
 import { useAuth } from "@/context/auth-context";
-import { JwtPayload } from "@/api/types/authentication";
-import { jwtDecode } from "jwt-decode";
 import { AxiosError } from "axios";
+import { toast } from "../use-toast";
 
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface LoginResponse {
-  access_token: string;
+  accessToken: string;
+  tokenType: string;
+  username: string;
+  email: string;
+  roles: string[];
+  id: number;
   // Add more fields as needed
 }
 
@@ -26,22 +29,36 @@ interface ErrorResponse {
 
 export const useLogin = () => {
   const navigate = useNavigate();
-  const toast = useToast();
-  const { setToken } = useAuth();
+  const { setToken, setRole } = useAuth();
 
   return useMutation({
     mutationFn: (request: LoginRequest) =>
-      axiosClient.post<LoginResponse>("", request).then((res) => {
-        tokenStorage.storeToken("token", res.data.access_token);
-        setToken(res.data.access_token);
-      }),
+      axiosClient
+        .post<LoginResponse>("/api/core/login", request)
+        .then((res) => {
+          console.log(res.data.accessToken);
+          tokenStorage.storeToken("token", res.data.accessToken);
+          tokenStorage.storeToken(
+            "role",
+            res.data.roles[res.data.roles.length - 1]
+          );
+
+          setToken(res.data.accessToken);
+          setRole(res.data.roles[res.data.roles.length - 1]);
+        }),
     onSuccess: () => {
-      const token = localStorage.getItem("token");
-      const decoded = jwtDecode<JwtPayload>(token as string);
-      // Handle success
+      toast({
+        title: "Login Success",
+        description: "You have successfully logged in",
+      });
+      navigate("/dashboard");
     },
     onError: (error: AxiosError<ErrorResponse>) => {
-      // Handle error
+      toast({
+        title: "Login Failed",
+        description:
+          "Oops! Something went wrong : " + error.response?.data.message,
+      });
     },
   });
 };

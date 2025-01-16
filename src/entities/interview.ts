@@ -16,6 +16,7 @@ export type Interview = {
   candidate: Candidate;
   evaluation: Evaluation;
   date: Date;
+  location: string;
   status: InterviewStatus;
   comment: string;
 };
@@ -30,4 +31,5 @@ export type InterviewReduced = {
   date: Date;
   status: string;
   comment: string;
+  location: string;
 };

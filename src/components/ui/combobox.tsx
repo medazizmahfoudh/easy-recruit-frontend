@@ -18,19 +18,31 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Noop } from "react-hook-form";
 
 interface ComboboxProps {
   icon?: LucideIcon;
+  onChange: (...event: any[]) => void;
+  onBlur: Noop;
   data: {
     value: string;
     label: string;
   }[];
-  setSelectedValue: (value: string) => void;
+  setSelectedItem: (selectedItem: { value: string; label: string }) => void;
 }
 
-export function Combobox({ data, icon, setSelectedValue }: ComboboxProps) {
+export function Combobox({
+  data,
+  icon,
+  setSelectedItem,
+  onChange,
+  onBlur,
+}: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [selectedLabel, setSelectedLabel] = React.useState("");
+  const [selectedItemState, setSelectedItemState] = React.useState({
+    value: "",
+    label: "",
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -41,8 +53,8 @@ export function Combobox({ data, icon, setSelectedValue }: ComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {selectedLabel !== ""
-            ? data.find((item) => item.label === selectedLabel)?.label
+          {selectedItemState.label !== ""
+            ? data.find((item) => item.label === selectedItemState.label)?.label
             : "Empty"}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -56,11 +68,19 @@ export function Combobox({ data, icon, setSelectedValue }: ComboboxProps) {
               {data &&
                 data.map((item) => (
                   <CommandItem
+                    onBlur={onBlur}
                     key={item.value}
                     value={item.label}
-                    onSelect={(currentValue) => {
-                      setSelectedLabel(currentValue);
-                      setSelectedValue(item.label);
+                    onSelect={() => {
+                      setSelectedItemState({
+                        value: item.value,
+                        label: item.label,
+                      });
+                      setSelectedItem({
+                        value: item.value,
+                        label: item.label,
+                      });
+                      onChange(item.label);
                       setOpen(false);
                     }}
                   >
@@ -69,7 +89,7 @@ export function Combobox({ data, icon, setSelectedValue }: ComboboxProps) {
                     <Check
                       className={cn(
                         "ml-auto",
-                        selectedLabel === item.label
+                        selectedItemState.label === item.label
                           ? "opacity-100"
                           : "opacity-0"
                       )}

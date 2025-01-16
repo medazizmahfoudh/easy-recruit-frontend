@@ -8,6 +8,8 @@ import {
   SortingState,
   getFilteredRowModel,
   ColumnFiltersState,
+  VisibilityState,
+  Row,
 } from "@tanstack/react-table";
 
 import {
@@ -19,27 +21,45 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import { Spinner } from "../ui/spinner";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import DeleteAlertDialog from "../dialogs/delete-alert-dialog";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   isLoading?: boolean;
   data: TData[];
-  filter?: boolean;
+  filterable?: boolean;
+  deletable?: boolean;
   filterColumn?: string;
+  filterPlaceholder?: string;
+  deleteAction?: () => void;
+  setSelectedRows?: (rows: Row<TData>[]) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  filter = false,
-  isLoading,
+  filterPlaceholder,
   filterColumn,
+  filterable = false,
+  deletable = false,
+  setSelectedRows,
+  isLoading,
+  deleteAction,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
+
   const table = useReactTable({
     data,
     columns,
@@ -49,33 +69,78 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
+      columnVisibility,
+      rowSelection,
     },
   });
 
+  useEffect(() => {
+    setSelectedRows?.(table.getSelectedRowModel().rows);
+  }, [rowSelection]);
+
   return (
-    <div>
-      {filter && (
-        <div className="flex items-center py-4">
-          {filterColumn && (
-            <Input
-              placeholder="Filter emails..."
-              value={
-                (table.getColumn(filterColumn)?.getFilterValue() as string) ??
-                ""
-              }
-              onChange={(event) =>
-                table
-                  .getColumn(filterColumn)
-                  ?.setFilterValue(event.target.value)
-              }
-              className="max-w-sm"
-            />
-          )}
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-between gap-4">
+        {filterable && (
+          <div className="flex items-center w-full">
+            {filterColumn && (
+              <Input
+                placeholder={filterPlaceholder ?? "Search..."}
+                value={
+                  (table.getColumn(filterColumn)?.getFilterValue() as string) ??
+                  ""
+                }
+                onChange={(event) =>
+                  table
+                    .getColumn(filterColumn)
+                    ?.setFilterValue(event.target.value)
+                }
+              />
+            )}
+          </div>
+        )}
+        <div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Columns visibility
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      )}
+        <div>
+          <DeleteAlertDialog
+            deleteAction={deleteAction}
+            disabled={
+              !(deletable && table.getSelectedRowModel().rows.length > 0)
+            }
+          />
+        </div>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -139,23 +204,29 @@ export function DataTable<TData, TValue>({
           )}
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
+      <div className="flex">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        <div className="flex items-center justify-end space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );

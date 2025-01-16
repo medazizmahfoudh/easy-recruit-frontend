@@ -16,6 +16,7 @@ const axiosClient = axios.create({
 
   // Default headers for all HTTP requests
   headers: {
+    accept: "*/*",
     "Content-Type": "application/json", // Specify that the payload is JSON
     Authorization: `Bearer ${token}`,
   },
